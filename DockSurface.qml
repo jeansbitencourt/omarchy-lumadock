@@ -176,12 +176,12 @@ PanelWindow {
         y: surface.vertical ? Math.round((parent.height - height) / 2)
             : (surface.position === "top" ? surface.edgeGap : parent.height - height - surface.edgeGap)
         radius: 23
-        border.color: "#67eff8ff"
+        border.color: "#45eff8ff"
         gradient: Gradient {
             orientation: surface.vertical ? Gradient.Horizontal : Gradient.Vertical
-            GradientStop { position: 0; color: "#ab354657" }
-            GradientStop { position: 0.38; color: "#96323d50" }
-            GradientStop { position: 1; color: "#bc182230" }
+            GradientStop { position: 0; color: "#30232e39" }
+            GradientStop { position: 0.48; color: "#3819232e" }
+            GradientStop { position: 1; color: "#50121b25" }
         }
 
         HoverHandler {
@@ -191,14 +191,15 @@ PanelWindow {
 
         Rectangle {
             anchors.fill: parent
-            anchors.margins: 2
-            radius: parent.radius - 2
+            anchors.margins: 1
+            radius: card.radius - 1
             gradient: Gradient {
                 orientation: surface.vertical ? Gradient.Horizontal : Gradient.Vertical
-                GradientStop { position: 0; color: "#37f8fdff" }
-                GradientStop { position: 0.21; color: "#07f8fdff" }
-                GradientStop { position: 0.78; color: "transparent" }
-                GradientStop { position: 1; color: "#327aa4c7" }
+                GradientStop { position: 0; color: "#66f8fdff" }
+                GradientStop { position: 0.045; color: "#24f8fdff" }
+                GradientStop { position: 0.18; color: "#00f8fdff" }
+                GradientStop { position: 0.84; color: "#00c5e1f7" }
+                GradientStop { position: 1; color: "#29c5e1f7" }
             }
         }
 
