@@ -1,15 +1,15 @@
 # LumaDock
 
-LumaDock é uma dock flutuante de vidro translúcido para o shell do Omarchy. Ela agrupa janelas por aplicativo, destaca o aplicativo em foco e mantém os atalhos fixados disponíveis quando os aplicativos estão fechados.
+LumaDock is a floating, translucent glass dock for the Omarchy shell. It groups windows by application, highlights the focused application, and keeps pinned shortcuts available when their applications are closed.
 
-## Requisitos
+## Requirements
 
-- Omarchy com Hyprland, Quickshell e suporte a plugins do shell. Testado no Omarchy 4.5.0.
-- As miniaturas usam a captura de janelas do Hyprland. Quando uma imagem está indisponível, a prévia exibe o ícone e o título da janela.
+- Omarchy with Hyprland, Quickshell, and shell plugin support. Tested on Omarchy 4.5.0.
+- Thumbnails use Hyprland window capture. When a thumbnail is unavailable, the preview displays the application's icon and the window title.
 
-## Instalação
+## Installation
 
-Para instalar a partir de uma cópia local deste repositório, execute na raiz do projeto. O diretório de destino deve estar livre para o clone.
+To install from a local copy of this repository, run these commands from the project root. The destination must be available for Git to clone into.
 
 ```bash
 plugins_dir="$HOME/.config/omarchy/plugins"
@@ -20,9 +20,9 @@ omarchy-shell shell rescanPlugins
 omarchy plugin enable jean.lumadock
 ```
 
-### Desfoque do fundo
+### Background blur
 
-Para aplicar o desfoque à superfície da dock, adicione esta regra a `~/.config/hypr/looknfeel.lua`. O efeito usa o desfoque do Hyprland quando ele está habilitado na sessão.
+Add this rule to `~/.config/hypr/looknfeel.lua` to blur the background behind the dock. The effect uses Hyprland's blur when it is enabled for the session.
 
 ```lua
 hl.layer_rule({
@@ -37,31 +37,31 @@ hyprctl reload
 hyprctl configerrors
 ```
 
-## Uso
+## Usage
 
-- Clique no ícone de um aplicativo para abrir seu atalho ou focar uma janela que já está aberta.
-- Passe o cursor sobre um ícone com janelas abertas para ver uma miniatura por janela. Clique na miniatura para focá-la ou no **×** no canto superior direito para fechar aquela janela.
-- Abra a engrenagem para buscar aplicativos instalados, fixar atalhos e reordená-los com as setas. Também é possível abrir as configurações com `omarchy-shell jean.lumadock settings`.
+- Click an application icon to launch it or focus a window that is already open.
+- Hover over an icon with open windows to see one thumbnail per window. Click a thumbnail to focus its window or click **×** in the upper-right corner to close it.
+- Click the gear icon to search installed applications, pin shortcuts, and reorder them with the arrow buttons. You can also open settings with `omarchy-shell jean.lumadock settings`.
 
-| Configuração | Comportamento |
+| Setting | Behavior |
 | --- | --- |
-| Aplicativos abertos | Exibe todos os workspaces por padrão. Você pode limitar a exibição ao workspace atual. |
-| Fixa | Reserva espaço na borda da tela. É o modo padrão. |
-| Ocultar automaticamente | Revela a dock quando o cursor toca a borda escolhida. Em workspaces vazios, a dock permanece visível. A animação respeita a preferência de movimento do Omarchy. |
-| Posição | Borda superior, inferior, esquerda ou direita. A borda inferior é o padrão. |
+| Show open apps | Shows applications from all workspaces by default. You can limit the view to the current workspace. |
+| Fixed | Reserves space at the screen edge. This is the default mode. |
+| Auto-hide | Reveals the dock when the cursor touches the selected edge. The dock stays visible on empty workspaces. The animation respects Omarchy's motion preference. |
+| Screen edge | Places the dock at the top, bottom, left, or right. The default is bottom. |
 
-As preferências ficam em `${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/lumadock.ini`. No primeiro uso, a LumaDock importa a ordem dos atalhos da dock nativa, quando ela está configurada. Se a dock nativa estiver habilitada, também poderá aparecer nos workspaces flutuantes.
+Preferences are stored in `${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/lumadock.ini`. On first use, LumaDock imports the built-in dock's pinned shortcuts in their configured order, if available. When enabled, the built-in dock can also appear on floating workspaces.
 
-Para desativar a LumaDock, execute `omarchy plugin disable jean.lumadock`.
+To disable LumaDock, run `omarchy plugin disable jean.lumadock`.
 
-## Desenvolvimento
+## Development
 
-- [LumaDock.qml](LumaDock.qml) acompanha as janelas, carrega as preferências e aciona os aplicativos.
-- [DockSurface.qml](DockSurface.qml), [DockPreview.qml](DockPreview.qml) e [DockSettings.qml](DockSettings.qml) implementam a dock, as miniaturas e as configurações.
-- [DockModel.js](DockModel.js) agrupa janelas, aplica o filtro por workspace e organiza os atalhos.
-- [i18n/](i18n/) contém as traduções em português do Brasil e inglês.
+- [LumaDock.qml](LumaDock.qml) tracks windows, loads preferences, and launches applications.
+- [DockSurface.qml](DockSurface.qml), [DockPreview.qml](DockPreview.qml), and [DockSettings.qml](DockSettings.qml) implement the dock, thumbnails, and settings.
+- [DockModel.js](DockModel.js) groups windows, filters by workspace, and orders shortcuts.
+- [i18n/](i18n/) contains the Brazilian Portuguese and English translations.
 
-Execute a validação do manifesto e os testes QML na raiz do projeto.
+Validate the manifest and run the QML tests from the project root.
 
 ```bash
 omarchy plugin validate .
