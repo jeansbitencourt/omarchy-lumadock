@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "jean.lumadock",
+  "name": "LumaDock",
+  "version": "1.0.0",
+  "description": "Floating glass app dock with ordered shortcuts and workspace filtering",
+  "kinds": ["service"],
+  "entryPoints": { "service": "LumaDock.qml" }
+}
