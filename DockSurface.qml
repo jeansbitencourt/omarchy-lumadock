@@ -27,8 +27,15 @@ PanelWindow {
     readonly property int slot: Math.min(60, Math.max(48, Math.round(52 * Commons.Style.fontScale)))
     readonly property int thickness: slot + 13
     readonly property int edgeGap: 10
+    readonly property int edgeTriggerSize: 2
+    // Keep the animated card clear of the edge trigger so the two layer surfaces
+    // do not steal pointer focus from each other while the dock is revealing.
+    readonly property int revealTravel: Math.max(0, edgeGap - edgeTriggerSize - 1)
     readonly property int cardLength: Math.max(thickness, Math.min(
         (vertical ? height : width) - 24, (apps.length + 1) * slot + 30))
+    readonly property bool pointerOverDock: cardHover.hovered
+        || (tooltipTile?.hovered ?? false) || (previewLoader.panel?.hovered ?? false)
+    onPointerOverDockChanged: updateReveal()
 
     property bool edgeRevealed: false
     property DockTile tooltipTile: null
@@ -66,10 +73,21 @@ PanelWindow {
     }
     onSettingsOpenChanged: if (settingsOpen) closePreview()
 
+    function revealFromEdge() {
+        if (!autoHide || remap.remapping)
+            return;
+        edgeRevealed = true;
+        if (pointerOverDock) {
+            hideTimer.stop();
+        } else {
+            hideTimer.restart();
+        }
+    }
+
     function updateReveal() {
         if (!autoHide || remap.remapping)
             return;
-        if (edgeHover.hovered || cardHover.hovered || previewLoader.panel?.hovered) {
+        if (pointerOverDock) {
             hideTimer.stop();
             edgeRevealed = true;
         } else {
@@ -90,6 +108,7 @@ PanelWindow {
         }
         if (previewTile && previewTile !== tooltipTile && !previewLoader.panel?.hovered)
             dismissPreview.restart();
+        updateReveal();
     }
 
     function closePreview() {
@@ -120,7 +139,12 @@ PanelWindow {
         id: hideTimer
         // Give the cursor time to cross the gap and a status bar on the same edge.
         interval: 480
-        onTriggered: surface.edgeRevealed = false
+        onTriggered: {
+            if (surface.pointerOverDock)
+                surface.updateReveal();
+            else
+                surface.edgeRevealed = false;
+        }
     }
 
     Ui.ScreenMoveRemap {
@@ -137,8 +161,8 @@ PanelWindow {
             top: surface.vertical || surface.position === "top"
             bottom: surface.vertical || surface.position === "bottom"
         }
-        implicitWidth: surface.vertical ? 2 : 0
-        implicitHeight: surface.vertical ? 0 : 2
+        implicitWidth: surface.vertical ? surface.edgeTriggerSize : 0
+        implicitHeight: surface.vertical ? 0 : surface.edgeTriggerSize
         color: "transparent"
         visible: surface.autoHide && !remap.remapping
         exclusionMode: ExclusionMode.Ignore
@@ -149,13 +173,18 @@ PanelWindow {
         HoverHandler {
             id: edgeHover
             acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-            onHoveredChanged: surface.updateReveal()
+            onHoveredChanged: {
+                if (hovered)
+                    surface.revealFromEdge();
+                else
+                    surface.updateReveal();
+            }
         }
     }
 
     Rectangle {
         id: card
-        readonly property real edgeOffset: surface.autoHide ? 18 * (1 - opacity) : 0
+        readonly property real edgeOffset: surface.autoHide ? surface.revealTravel * (1 - opacity) : 0
         visible: surface.shown || opacity > 0
         opacity: surface.shown ? 1 : 0
         transform: Translate {
