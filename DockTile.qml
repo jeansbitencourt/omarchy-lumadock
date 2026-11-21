@@ -15,6 +15,7 @@ Item {
     readonly property alias hovered: hover.hovered
 
     signal clicked
+    signal rightClicked
 
     Accessible.role: Accessible.Button
     Accessible.name: label
@@ -82,6 +83,12 @@ Item {
     }
     TapHandler {
         id: tap
-        onTapped: tile.clicked()
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onTapped: (eventPoint, button) => {
+            if (button === Qt.RightButton)
+                tile.rightClicked();
+            else
+                tile.clicked();
+        }
     }
 }

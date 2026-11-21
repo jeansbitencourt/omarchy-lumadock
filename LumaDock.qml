@@ -153,13 +153,17 @@ Item {
 
     function activate(item, workspaceId, specialId) {
         if (!item.windows.length) {
-            const entry = DesktopEntries.byId(item.desktopId);
-            if (entry)
-                Quickshell.execDetached(Model.launchCommand(entry));
+            root.launchNewInstance(item);
             return;
         }
         const window = Model.pickWindow(item.windows, root.focusedAddress, workspaceId, specialId);
         root.activateWindow(window, workspaceId);
+    }
+
+    function launchNewInstance(item) {
+        const entry = DesktopEntries.byId(item.desktopId);
+        if (entry)
+            Quickshell.execDetached(Model.launchCommand(entry));
     }
 
     function activateWindow(window, workspaceId) {

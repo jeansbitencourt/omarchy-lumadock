@@ -287,6 +287,11 @@ PanelWindow {
                             if (app)
                                 surface.dock.activate(app, surface.workspaceId, surface.specialId);
                         }
+                        onRightClicked: {
+                            surface.closePreview();
+                            if (app)
+                                surface.dock.launchNewInstance(app);
+                        }
                         onHoveredChanged: surface.updateTooltip(appTile)
                     }
                 }

@@ -40,6 +40,7 @@ hyprctl configerrors
 ## Usage
 
 - Click an application icon to launch it or focus a window that is already open.
+- Right-click an application icon to launch another instance.
 - Hover over an icon with open windows to see one thumbnail per window. Click a thumbnail to focus its window or click **×** in the upper-right corner to close it.
 - Click the gear icon to search installed applications, pin shortcuts, and reorder them with the arrow buttons. You can also open settings with `omarchy-shell jean.lumadock settings`.
 
