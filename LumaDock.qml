@@ -47,7 +47,7 @@ Item {
                 desktopId: entry ? entry.id : "",
                 appId: appId,
                 wayland: wayland,
-                title: toplevel.title,
+                toplevel: toplevel,
                 address: toplevel.address,
                 workspaceId: workspace.id,
                 minimized: minimized,

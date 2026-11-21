@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import Quickshell
 import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Commons as Commons
@@ -15,6 +16,7 @@ Rectangle {
     required property bool vertical
     required property int availableLength
     readonly property alias hovered: panelHover.hovered
+    readonly property var windowsByAddress: new Map(windows.map(window => [window.address, window]))
 
     property int tileWidth: 174
     property int tileHeight: 112
@@ -41,7 +43,9 @@ Rectangle {
         anchors.fill: parent
         anchors.margins: panel.padding
         orientation: panel.vertical ? ListView.Vertical : ListView.Horizontal
-        model: panel.windows
+        model: ScriptModel {
+            values: panel.windows.map(window => window.address)
+        }
         spacing: panel.gap
         clip: true
         cacheBuffer: 0
@@ -65,8 +69,9 @@ Rectangle {
 
         delegate: Rectangle {
             id: tile
-            required property var modelData
-            readonly property bool focused: modelData.address === panel.focusedAddress
+            required property string modelData
+            readonly property var windowData: panel.windowsByAddress.get(modelData)
+            readonly property bool focused: modelData === panel.focusedAddress
             width: panel.tileWidth
             height: panel.tileHeight
             radius: 9
@@ -75,7 +80,7 @@ Rectangle {
 
             Accessible.role: Accessible.Button
             Accessible.name: title.text
-            Accessible.onPressAction: panel.selected(modelData)
+            Accessible.onPressAction: if (tile.windowData) panel.selected(tile.windowData)
 
             Rectangle {
                 id: imageArea
@@ -90,7 +95,7 @@ Rectangle {
                 ScreencopyView {
                     id: shot
                     anchors.centerIn: parent
-                    captureSource: tile.modelData.wayland ?? null
+                    captureSource: tile.windowData?.wayland ?? null
                     constraintSize: Qt.size(imageArea.width, imageArea.height)
                     live: false
                     paintCursor: false
@@ -117,7 +122,7 @@ Rectangle {
                 elide: Text.ElideRight
                 color: "#f0f7ff"
                 font.pixelSize: 12
-                text: String(tile.modelData.title || panel.appName).slice(0, 240)
+                text: String(tile.windowData?.toplevel?.title || panel.appName).slice(0, 240)
             }
 
             MouseArea {
@@ -125,7 +130,7 @@ Rectangle {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: panel.selected(tile.modelData)
+                onClicked: if (tile.windowData) panel.selected(tile.windowData)
             }
 
             Rectangle {
@@ -139,7 +144,7 @@ Rectangle {
 
                 Accessible.role: Accessible.Button
                 Accessible.name: panel.closeLabel
-                Accessible.onPressAction: panel.closeRequested(tile.modelData)
+                Accessible.onPressAction: if (tile.windowData) panel.closeRequested(tile.windowData)
 
                 PlainLabel {
                     anchors.fill: parent
@@ -154,7 +159,7 @@ Rectangle {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: panel.closeRequested(tile.modelData)
+                    onClicked: if (tile.windowData) panel.closeRequested(tile.windowData)
                 }
             }
         }
