@@ -1,5 +1,4 @@
 import QtQuick
-import Quickshell.Widgets
 import qs.Commons as Commons
 
 Item {
@@ -37,22 +36,22 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
         anchors.topMargin: 6
+        clip: true
         opacity: tile.muted && !tile.hovered ? 0.72 : 1
         scale: tap.pressed ? 0.94 : hover.hovered ? 1.085 : 1
         Behavior on scale {
             NumberAnimation { duration: Commons.Style.duration(150); easing.type: Easing.OutCubic }
         }
 
-        IconImage {
+        NormalizedIcon {
             id: appIcon
             anchors.fill: parent
             source: tile.icon
-            visible: status === Image.Ready
         }
 
         Rectangle {
             anchors.fill: parent
-            visible: !appIcon.visible
+            visible: !appIcon.ready
             radius: 11
             color: tile.fallback === "⚙" ? "transparent" : "#606d9ab8"
 
