@@ -11,6 +11,8 @@ PanelWindow {
     id: panel
     required property LumaDock dock
     property bool choosingApps: false
+    property real savedPinScrollY: 0
+    property bool preservePinScroll: false
     readonly property var rows: {
         const installed = dock.installedApps;
         if (!choosingApps)
@@ -31,7 +33,37 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
+    onRowsChanged: if (preservePinScroll) scrollRestore.restart()
+
     function closeSettings() { dock.settingsScreen = null; }
+
+    function movePinnedApp(desktopId, offset) {
+        if (!preservePinScroll)
+            savedPinScrollY = list.contentY;
+        preservePinScroll = true;
+        dock.movePin(desktopId, offset);
+        scrollRestore.restart();
+    }
+
+    function restorePinScroll() {
+        if (!preservePinScroll || choosingApps)
+            return;
+        const maximum = Math.max(0, list.contentHeight - list.height);
+        list.contentY = Math.max(0, Math.min(savedPinScrollY, maximum));
+        preservePinScroll = false;
+    }
+
+    function cancelPinScrollRestore() {
+        preservePinScroll = false;
+        scrollRestore.stop();
+    }
+
+    Timer {
+        id: scrollRestore
+        interval: 16
+        repeat: false
+        onTriggered: panel.restorePinScroll()
+    }
 
     Rectangle {
         anchors.fill: parent
@@ -141,6 +173,7 @@ PanelWindow {
                     label: panel.dock.strings.t("pins")
                     selected: !panel.choosingApps
                     onClicked: {
+                        panel.cancelPinScrollRestore();
                         panel.choosingApps = false;
                         list.positionViewAtBeginning();
                     }
@@ -150,6 +183,7 @@ PanelWindow {
                     label: panel.dock.strings.t("apps")
                     selected: panel.choosingApps
                     onClicked: {
+                        panel.cancelPinScrollRestore();
                         panel.choosingApps = true;
                         list.positionViewAtBeginning();
                         search.forceActiveFocus();
@@ -167,7 +201,10 @@ PanelWindow {
                 placeholderText: panel.dock.strings.t("search")
                 selectByMouse: true
                 Keys.onEscapePressed: panel.closeSettings()
-                onTextChanged: list.positionViewAtBeginning()
+                onTextChanged: {
+                    panel.cancelPinScrollRestore();
+                    list.positionViewAtBeginning();
+                }
                 background: Rectangle {
                     color: "#90131e2a"
                     radius: 8
@@ -185,6 +222,7 @@ PanelWindow {
                     spacing: 4
                     model: panel.rows
                     clip: true
+                    onModelChanged: if (panel.preservePinScroll) scrollRestore.restart()
                     Controls.ScrollBar.vertical: Controls.ScrollBar {}
 
                     delegate: Rectangle {
@@ -218,14 +256,14 @@ PanelWindow {
                                 enabled: item.index > 0
                                 caption: "↑"
                                 label: panel.dock.strings.t("moveUp").arg(item.modelData.name)
-                                onClicked: panel.dock.movePin(item.modelData.desktopId, -1)
+                                onClicked: panel.movePinnedApp(item.modelData.desktopId, -1)
                             }
                             Action {
                                 visible: !panel.choosingApps
                                 enabled: item.index < panel.dock.pinnedIds.length - 1
                                 caption: "↓"
                                 label: panel.dock.strings.t("moveDown").arg(item.modelData.name)
-                                onClicked: panel.dock.movePin(item.modelData.desktopId, 1)
+                                onClicked: panel.movePinnedApp(item.modelData.desktopId, 1)
                             }
                             Action {
                                 caption: item.pinned ? (panel.choosingApps ? "✓" : "×") : "+"
