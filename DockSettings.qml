@@ -13,6 +13,7 @@ PanelWindow {
     property bool choosingApps: false
     property real savedPinScrollY: 0
     property bool preservePinScroll: false
+    readonly property var theme: dock.theme.settings
     readonly property var rows: {
         const installed = dock.installedApps;
         if (!choosingApps)
@@ -25,7 +26,7 @@ PanelWindow {
     }
 
     implicitWidth: Math.min(520, screen ? screen.width - 28 : 520)
-    implicitHeight: Math.min(590, screen ? screen.height - 110 : 590)
+    implicitHeight: Math.min(660, screen ? screen.height - 110 : 660)
     exclusionMode: ExclusionMode.Normal
     exclusiveZone: 0
     color: "transparent"
@@ -67,9 +68,9 @@ PanelWindow {
 
     Rectangle {
         anchors.fill: parent
-        radius: 22
-        color: "#fb223040"
-        border.color: "#667c9bb9"
+        radius: panel.theme.radius
+        color: panel.theme.panel
+        border.color: panel.theme.border
         focus: true
         Keys.onEscapePressed: panel.closeSettings()
         LayoutMirroring.enabled: Commons.I18n.rightToLeft
@@ -84,7 +85,7 @@ PanelWindow {
                 spacing: 10
                 PlainLabel {
                     Layout.fillWidth: true
-                    color: "#f0f7ff"
+                    color: panel.theme.text
                     font.pixelSize: 21
                     font.weight: Font.DemiBold
                     text: panel.dock.strings.t("settings")
@@ -160,10 +161,33 @@ PanelWindow {
                 }
             }
 
+            GroupLabel {
+                text: panel.dock.strings.t("appearance")
+            }
+
+            GridLayout {
+                Layout.fillWidth: true
+                columns: 3
+                rowSpacing: 6
+                columnSpacing: 6
+                Repeater {
+                    model: panel.dock.styles
+                    delegate: Action {
+                        required property string modelData
+                        Layout.fillWidth: true
+                        Layout.preferredWidth: 1
+                        label: panel.dock.strings.t("style" + modelData.charAt(0).toUpperCase() + modelData.slice(1))
+                        checkable: true
+                        selected: panel.dock.dockStyle === modelData
+                        onClicked: panel.dock.setDockStyle(modelData)
+                    }
+                }
+            }
+
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
-                color: "#4965798f"
+                color: panel.theme.divider
             }
 
             RowLayout {
@@ -196,8 +220,8 @@ PanelWindow {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 33
                 visible: panel.choosingApps
-                color: "#eef6ff"
-                placeholderTextColor: "#9eb5ca"
+                color: panel.theme.fieldText
+                placeholderTextColor: panel.theme.placeholder
                 placeholderText: panel.dock.strings.t("search")
                 selectByMouse: true
                 Keys.onEscapePressed: panel.closeSettings()
@@ -206,9 +230,9 @@ PanelWindow {
                     list.positionViewAtBeginning();
                 }
                 background: Rectangle {
-                    color: "#90131e2a"
+                    color: panel.theme.field
                     radius: 8
-                    border.color: search.activeFocus ? "#a786c4ef" : "#596e8da7"
+                    border.color: search.activeFocus ? panel.theme.fieldBorderActive : panel.theme.fieldBorder
                 }
             }
 
@@ -233,7 +257,7 @@ PanelWindow {
                         width: Math.max(0, ListView.view.width - 10)
                         height: 39
                         radius: 8
-                        color: "#6361788d"
+                        color: panel.theme.row
 
                         RowLayout {
                             anchors.fill: parent
@@ -248,7 +272,7 @@ PanelWindow {
                             PlainLabel {
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
-                                color: "#f0f7ff"
+                                color: panel.theme.text
                                 text: item.modelData.name
                             }
                             Action {
@@ -278,7 +302,7 @@ PanelWindow {
                 PlainLabel {
                     anchors.centerIn: parent
                     visible: list.count === 0
-                    color: "#c5d7e8"
+                    color: panel.theme.muted
                     text: panel.dock.strings.t(panel.choosingApps ? "noMatches" : "noPins")
                 }
             }
@@ -286,7 +310,7 @@ PanelWindow {
     }
 
     component GroupLabel: PlainLabel {
-        color: "#c5d7e8"
+        color: panel.theme.muted
     }
 
     component Action: Controls.AbstractButton {
@@ -303,17 +327,18 @@ PanelWindow {
         Accessible.checked: selected
         background: Rectangle {
             radius: 8
-            border.color: control.activeFocus ? "#b3cce8ff" : "transparent"
+            border.color: control.activeFocus ? panel.theme.focusRing : "transparent"
             color: !control.enabled ? "transparent"
-                : control.down ? "#a4507b9f"
-                : control.selected ? "#88608aac" : control.hovered ? "#66596e85" : "#303f5264"
+                : control.down ? panel.theme.buttonDown
+                : control.selected ? panel.theme.buttonSelected
+                : control.hovered ? panel.theme.buttonHover : panel.theme.button
         }
         contentItem: PlainLabel {
             id: buttonLabel
             text: control.caption
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
-            color: control.enabled ? "#f0f7ff" : "#8095a9"
+            color: control.enabled ? panel.theme.text : panel.theme.disabled
         }
     }
 }
