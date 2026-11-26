@@ -6,6 +6,7 @@ import Quickshell.Hyprland
 import Quickshell.Io
 import qs.Commons as Commons
 import "DockModel.js" as Model
+import "DockStyles.js" as Styles
 
 Item {
     id: root
@@ -16,6 +17,9 @@ Item {
     readonly property alias autoHide: preferences.autoHide
     readonly property string position: Model.normalizePosition(preferences.position)
     readonly property var positions: Model.positions
+    readonly property string dockStyle: Styles.normalizeStyle(preferences.dockStyle)
+    readonly property var styles: Styles.ids
+    readonly property var theme: Styles.theme(dockStyle)
     readonly property string focusedAddress: Hyprland.activeToplevel ? Hyprland.activeToplevel.address : ""
     readonly property var installedApps: DesktopEntries.applications.values
     readonly property var terminalApps: installedApps.filter(entry => entry.runInTerminal || entry.execString.includes("--app-id="))
@@ -72,6 +76,7 @@ Item {
         property bool currentOnly: false
         property bool autoHide: false
         property string position: "bottom"
+        property string dockStyle: "liquid"
     }
 
     FileView {
@@ -148,6 +153,13 @@ Item {
         const position = Model.normalizePosition(value);
         preferences.position = position;
         preferences.setValue("position", position);
+        preferences.sync();
+    }
+
+    function setDockStyle(value) {
+        const style = Styles.normalizeStyle(value);
+        preferences.dockStyle = style;
+        preferences.setValue("dockStyle", style);
         preferences.sync();
     }
 

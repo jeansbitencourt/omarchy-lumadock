@@ -2,6 +2,7 @@ import QtQuick
 import QtTest
 import ".." as LumaDock
 import "../DockModel.js" as Model
+import "../DockStyles.js" as Styles
 
 TestCase {
     name: "LumaDock"
@@ -69,5 +70,51 @@ TestCase {
         verify(Model.hasOpenWindows(windows, 2, -99));
         verify(!Model.hasOpenWindows(windows, 2, -98));
         verify(!Model.hasOpenWindows([], 2, 0));
+    }
+
+    function test_styleNormalization() {
+        compare(Styles.ids, ["liquid", "frosted", "clear", "solid", "minimal"]);
+        for (const id of Styles.ids)
+            compare(Styles.normalizeStyle(id), id);
+        compare(Styles.normalizeStyle("invalid"), "liquid");
+        compare(Styles.normalizeStyle(undefined), "liquid");
+        compare(Styles.theme("invalid"), Styles.theme("liquid"));
+    }
+
+    function test_styleTokensAreComplete() {
+        const base = Styles.theme("liquid");
+        for (const id of Styles.ids) {
+            const theme = Styles.theme(id);
+            compare(Object.keys(theme).sort(), Object.keys(base).sort(), id);
+            for (const group of Object.keys(base))
+                compare(Object.keys(theme[group]).sort(), Object.keys(base[group]).sort(), id + "." + group);
+            compare(theme.card.body.length, 3, id);
+            verify(theme.card.highlight === null || theme.card.highlight.length === 5, id);
+        }
+    }
+
+    function test_liquidKeepsOriginalLook() {
+        const liquid = Styles.theme("liquid");
+        compare(liquid.card.radius, 23);
+        compare(liquid.card.borderColor, "#45eff8ff");
+        compare(liquid.card.body, ["#30232e39", "#3819232e", "#50121b25"]);
+        compare(liquid.card.highlight[0], "#66f8fdff");
+        compare(liquid.settings.panel, "#fb223040");
+        compare(liquid.preview.panel, "#fb202c3c");
+    }
+
+    function test_styleBlurAndOpacity() {
+        // Hyprland's layer rule ignores alpha below 0.08, so the clear card gets no blur.
+        for (const color of Styles.theme("clear").card.body)
+            verify(Styles.alphaOf(color) < 0.08, color);
+        for (const color of Styles.theme("solid").card.body)
+            compare(Styles.alphaOf(color), 1);
+        for (const color of Styles.theme("frosted").card.body)
+            verify(Styles.alphaOf(color) > 0.08 && Styles.alphaOf(color) < 0.6, color);
+        for (const id of ["liquid", "frosted", "clear"])
+            verify(Styles.theme(id).card.borderWidth > 0, id);
+        compare(Styles.theme("frosted").card.highlight, null);
+        verify(Styles.theme("liquid").card.highlight !== null);
+        compare(Styles.alphaOf("transparent"), 0);
     }
 }
