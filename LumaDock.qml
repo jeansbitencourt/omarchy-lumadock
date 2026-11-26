@@ -12,7 +12,7 @@ Item {
     id: root
 
     property var settingsScreen: null
-    readonly property alias strings: strings
+    readonly property alias strings: translations
     readonly property alias currentOnly: preferences.currentOnly
     readonly property alias autoHide: preferences.autoHide
     readonly property string position: Model.normalizePosition(preferences.position)
@@ -32,8 +32,7 @@ Item {
         }
     }
     readonly property var windows: {
-        // Keep desktop-entry lookup reactive when an app is installed or removed.
-        root.installedApps.length;
+        const installedApps = root.installedApps;
         const result = [];
         for (const toplevel of Hyprland.toplevels.values) {
             const wayland = toplevel.wayland;
@@ -42,7 +41,7 @@ Item {
             if (!workspace || wayland?.parent || info?.mapped === false)
                 continue;
             const appId = wayland?.appId || info?.class || info?.initialClass || "";
-            const entry = root.entryForWindow(appId, info?.initialClass);
+            const entry = root.entryForWindow(appId, info?.initialClass, installedApps);
             const minimized = workspace.name === "special:minimized";
             const sourceTag = minimized && Array.isArray(info?.tags)
                 ? info.tags.find(tag => /^omarchy-minimized-from-[1-9][0-9]*$/.test(tag)) : null;
@@ -65,7 +64,7 @@ Item {
         || Quickshell.env("HOME") + "/.config") + "/omarchy"
 
     Commons.Translations {
-        id: strings
+        id: translations
         directory: Qt.resolvedUrl("i18n")
     }
 
@@ -91,13 +90,16 @@ Item {
             root.savePins(root.pinnedIds);
     })
 
-    function entryForWindow(appId, initialClass) {
+    function entryForWindow(appId, initialClass, installedApps) {
         const entry = (appId && DesktopEntries.heuristicLookup(appId))
             || (initialClass && DesktopEntries.heuristicLookup(initialClass));
         if (entry)
             return entry;
         if (!appId)
             return null;
+        const installedEntry = installedApps.find(candidate => candidate.id === appId);
+        if (installedEntry)
+            return installedEntry;
         const flag = "--app-id=" + appId;
         const terminalCommand = appId.startsWith("org.omarchy.") ? appId.slice(12) : "";
         return root.terminalApps.find(candidate => candidate.execString.split(/\s+/).includes(flag)
@@ -107,12 +109,12 @@ Item {
 
     function entryLabel(item) {
         return String(DesktopEntries.byId(item.desktopId)?.name || item.name
-            || strings.t("unknownApp")).slice(0, 160);
+            || translations.t("unknownApp")).slice(0, 160);
     }
 
     function iconSource(desktopId, fallback) {
         const entry = DesktopEntries.byId(desktopId);
-        if (entry?.icon?.startsWith("/"))
+        if (entry?.icon.startsWith("/"))
             return Commons.Util.fileUrl(entry.icon);
         const icon = entry?.icon || fallback;
         // Wayland app IDs can be supplied by any app; only try theme icon names.
