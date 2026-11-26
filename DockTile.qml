@@ -11,6 +11,7 @@ Item {
     property bool running: false
     property bool highlighted: false
     property bool muted: false
+    required property var theme
     readonly property alias hovered: hover.hovered
 
     signal clicked
@@ -23,9 +24,9 @@ Item {
     Rectangle {
         anchors.fill: parent
         anchors.margins: 2
-        radius: 15
-        color: tile.highlighted ? "#537bc9f6" : tile.hovered ? "#25eef8ff" : "transparent"
-        border.color: tile.highlighted ? "#a7bce7ff" : "transparent"
+        radius: tile.theme.tile.radius
+        color: tile.highlighted ? tile.theme.tile.active : tile.hovered ? tile.theme.tile.hover : "transparent"
+        border.color: tile.highlighted ? tile.theme.tile.activeBorder : "transparent"
         Behavior on color { ColorAnimation { duration: Commons.Style.duration(130) } }
     }
 
@@ -53,13 +54,13 @@ Item {
             anchors.fill: parent
             visible: !appIcon.ready
             radius: 11
-            color: tile.fallback === "⚙" ? "transparent" : "#606d9ab8"
+            color: tile.fallback === "⚙" ? "transparent" : tile.theme.tile.fallbackBg
 
             PlainLabel {
                 anchors.fill: parent
                 horizontalAlignment: Text.AlignHCenter
                 text: tile.fallback
-                color: "#edf7ff"
+                color: tile.theme.tile.fallbackText
                 font.pixelSize: tile.fallback === "⚙" ? 27 : 19
             }
         }
@@ -73,7 +74,7 @@ Item {
         height: 4
         radius: 2
         visible: tile.running
-        color: tile.highlighted ? "#a5e8ff" : "#adc2d6"
+        color: tile.highlighted ? tile.theme.tile.indicatorActive : tile.theme.tile.indicator
     }
 
     HoverHandler {

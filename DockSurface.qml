@@ -20,6 +20,7 @@ PanelWindow {
         && (window.workspace?.id === workspaceId || window.workspace?.id === specialId)
         && Number(window.lastIpcObject?.fullscreen) >= 2)
     readonly property string position: dock.position
+    readonly property var theme: dock.theme
     readonly property bool vertical: position === "left" || position === "right"
     readonly property bool settingsOpen: dock.settingsScreen === screen
     readonly property bool autoHide: dock.autoHide
@@ -204,13 +205,14 @@ PanelWindow {
             : Math.round((parent.width - width) / 2)
         y: surface.vertical ? Math.round((parent.height - height) / 2)
             : (surface.position === "top" ? surface.edgeGap : parent.height - height - surface.edgeGap)
-        radius: 23
-        border.color: "#45eff8ff"
+        radius: surface.theme.card.radius
+        border.width: surface.theme.card.borderWidth
+        border.color: surface.theme.card.borderColor
         gradient: Gradient {
             orientation: surface.vertical ? Gradient.Horizontal : Gradient.Vertical
-            GradientStop { position: 0; color: "#30232e39" }
-            GradientStop { position: 0.48; color: "#3819232e" }
-            GradientStop { position: 1; color: "#50121b25" }
+            GradientStop { position: 0; color: surface.theme.card.body[0] }
+            GradientStop { position: 0.48; color: surface.theme.card.body[1] }
+            GradientStop { position: 1; color: surface.theme.card.body[2] }
         }
 
         HoverHandler {
@@ -219,16 +221,19 @@ PanelWindow {
         }
 
         Rectangle {
+            id: highlight
+            readonly property var stops: surface.theme.card.highlight
             anchors.fill: parent
             anchors.margins: 1
             radius: card.radius - 1
+            visible: stops !== null
             gradient: Gradient {
                 orientation: surface.vertical ? Gradient.Horizontal : Gradient.Vertical
-                GradientStop { position: 0; color: "#66f8fdff" }
-                GradientStop { position: 0.045; color: "#24f8fdff" }
-                GradientStop { position: 0.18; color: "#00f8fdff" }
-                GradientStop { position: 0.84; color: "#00c5e1f7" }
-                GradientStop { position: 1; color: "#29c5e1f7" }
+                GradientStop { position: 0; color: highlight.stops?.[0] ?? "transparent" }
+                GradientStop { position: 0.045; color: highlight.stops?.[1] ?? "transparent" }
+                GradientStop { position: 0.18; color: highlight.stops?.[2] ?? "transparent" }
+                GradientStop { position: 0.84; color: highlight.stops?.[3] ?? "transparent" }
+                GradientStop { position: 1; color: highlight.stops?.[4] ?? "transparent" }
             }
         }
 
@@ -281,6 +286,7 @@ PanelWindow {
                         icon: app ? surface.dock.iconSource(app.desktopId, app.name) : ""
                         running: (app?.windows.length ?? 0) > 0
                         highlighted: focused
+                        theme: surface.theme
                         muted: !running
                         onClicked: {
                             surface.closePreview();
@@ -304,7 +310,7 @@ PanelWindow {
             height: surface.vertical ? 1 : 28
             x: surface.vertical ? Math.round((card.width - width) / 2) : settingsTile.x - 5
             y: surface.vertical ? settingsTile.y - 5 : Math.round((card.height - height) / 2)
-            color: "#55e6f4ff"
+            color: surface.theme.card.separator
             visible: surface.apps.length > 0
         }
 
@@ -317,6 +323,7 @@ PanelWindow {
             label: surface.dock.strings.t("settings")
             fallback: "⚙"
             highlighted: surface.settingsOpen
+            theme: surface.theme
             onClicked: surface.dock.toggleSettings(surface.screen)
             onHoveredChanged: surface.updateTooltip(settingsTile)
         }
@@ -336,9 +343,9 @@ PanelWindow {
             : Math.max(7, Math.min(surface.width - width - 7, tileCenter.x - width / 2))
         y: surface.vertical ? Math.max(7, Math.min(surface.height - height - 7, tileCenter.y - height / 2))
             : (surface.position === "top" ? card.y + card.height + 5 : card.y - height - 5)
-        radius: 9
-        color: "#ef192534"
-        border.color: "#686f8aa4"
+        radius: surface.theme.tooltip.radius
+        color: surface.theme.tooltip.color
+        border.color: surface.theme.tooltip.border
 
         PlainLabel {
             id: tooltipLabel
@@ -346,7 +353,7 @@ PanelWindow {
             anchors.leftMargin: 10
             anchors.rightMargin: 10
             elide: Text.ElideRight
-            color: "#f1f7ff"
+            color: surface.theme.tooltip.text
             horizontalAlignment: Text.AlignHCenter
             text: surface.tooltipTile?.label ?? ""
         }
@@ -370,6 +377,7 @@ PanelWindow {
             appIcon: surface.previewTile?.icon ?? ""
             focusedAddress: surface.dock.focusedAddress
             closeLabel: surface.dock.strings.t("closeWindow")
+            theme: surface.theme
             vertical: surface.vertical
             availableLength: (vertical ? surface.height : surface.width) - 14
             onHoveredChanged: {

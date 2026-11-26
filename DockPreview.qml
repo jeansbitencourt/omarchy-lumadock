@@ -15,6 +15,7 @@ Rectangle {
     required property string closeLabel
     required property bool vertical
     required property int availableLength
+    required property var theme
     readonly property alias hovered: panelHover.hovered
     readonly property var windowsByAddress: new Map(windows.map(window => [window.address, window]))
 
@@ -30,9 +31,9 @@ Rectangle {
 
     width: vertical ? tileWidth + padding * 2 : length
     height: vertical ? length : tileHeight + padding * 2
-    radius: 15
-    color: "#fb202c3c"
-    border.color: "#8d7798b6"
+    radius: theme.preview.radius
+    color: theme.preview.panel
+    border.color: theme.preview.border
     LayoutMirroring.enabled: !vertical && Commons.I18n.rightToLeft
     LayoutMirroring.childrenInherit: true
 
@@ -75,8 +76,8 @@ Rectangle {
             width: panel.tileWidth
             height: panel.tileHeight
             radius: 9
-            color: pointer.containsMouse ? "#526d89" : "#34475c"
-            border.color: focused ? "#a5e8ff" : "#596f88"
+            color: pointer.containsMouse ? panel.theme.preview.tileHover : panel.theme.preview.tile
+            border.color: focused ? panel.theme.preview.tileBorderActive : panel.theme.preview.tileBorder
 
             Accessible.role: Accessible.Button
             Accessible.name: title.text
@@ -90,7 +91,7 @@ Rectangle {
                 anchors.bottom: title.top
                 anchors.margins: 5
                 radius: 5
-                color: "#151e2b"
+                color: panel.theme.preview.imageArea
 
                 ScreencopyView {
                     id: shot
@@ -120,7 +121,7 @@ Rectangle {
                 anchors.rightMargin: 8
                 height: 24
                 elide: Text.ElideRight
-                color: "#f0f7ff"
+                color: panel.theme.preview.title
                 font.pixelSize: 12
                 text: String(tile.windowData?.toplevel?.title || panel.appName).slice(0, 240)
             }
@@ -139,8 +140,8 @@ Rectangle {
                 x: tile.width - width - 5
                 y: 5
                 radius: 7
-                color: closePointer.containsMouse ? "#a83748" : "#e024303f"
-                border.color: "#8799a8b9"
+                color: closePointer.containsMouse ? panel.theme.preview.closeHover : panel.theme.preview.closeBg
+                border.color: panel.theme.preview.closeBorder
 
                 Accessible.role: Accessible.Button
                 Accessible.name: panel.closeLabel
