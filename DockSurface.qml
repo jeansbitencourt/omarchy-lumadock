@@ -6,7 +6,8 @@ import Quickshell.Wayland
 import qs.Commons as Commons
 import "DockModel.js" as Model
 
-PanelWindow {
+// Quickshell provides the concrete panel at runtime. Its lint metadata exposes the abstract interface.
+PanelWindow { // qmllint disable uncreatable-type
     id: surface
 
     required property LumaDock dock
@@ -153,7 +154,7 @@ PanelWindow {
     }
 
     // A separate layer reaches the physical edge even when another bar reserves it.
-    PanelWindow {
+    PanelWindow { // qmllint disable uncreatable-type
         screen: surface.screen
         anchors {
             left: !surface.vertical || surface.position === "left"
