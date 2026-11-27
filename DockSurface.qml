@@ -4,7 +4,6 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
 import qs.Commons as Commons
-import qs.Ui as Ui
 import "DockModel.js" as Model
 
 PanelWindow {
@@ -148,9 +147,9 @@ PanelWindow {
         }
     }
 
-    Ui.ScreenMoveRemap {
+    ScreenMoveRemap {
         id: remap
-        window: surface
+        screen: surface.screen
     }
 
     // A separate layer reaches the physical edge even when another bar reserves it.

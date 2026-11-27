@@ -8,6 +8,33 @@ TestCase {
     name: "LumaDock"
 
     Component { id: label; LumaDock.PlainLabel {} }
+    Component { id: remapComponent; LumaDock.ScreenMoveRemap {} }
+    Component {
+        id: screenComponent
+        QtObject {
+            property int x: 0
+            property int y: 0
+        }
+    }
+    SignalSpy { id: remapSpy; signalName: "remappingChanged" }
+
+    function test_screenMovesCoalesce() {
+        const screen = createTemporaryObject(screenComponent, this);
+        const remap = createTemporaryObject(remapComponent, this, { screen: screen });
+        remapSpy.target = remap;
+        verify(remapSpy.valid);
+        remapSpy.clear();
+        verify(!remap.remapping);
+
+        screen.x = 1920;
+        screen.y = 1080;
+        remapSpy.wait(1500);
+        verify(remap.remapping);
+        remapSpy.wait(1500);
+        verify(!remap.remapping);
+        wait(250);
+        compare(remapSpy.count, 2);
+    }
 
     function test_markupIsPlainText() {
         const markup = '<img src="https://example.invalid/tracker"><b>Example</b>';
